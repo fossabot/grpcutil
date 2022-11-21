@@ -23,10 +23,24 @@ import (
 	grpc_opentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
+	"time"
+	"math"
 )
 
+
+func KeepAliveDefault() grpc.ServerOption {
+		return grpc.KeepaliveParams(keepalive.ServerParameters{
+			MaxConnectionIdle:     time.Duration(math.MaxInt64),
+			MaxConnectionAge:      time.Duration(math.MaxInt64),
+			MaxConnectionAgeGrace: time.Duration(math.MaxInt64),
+			Time:                  2 * time.Hour,
+			Timeout:               30 * time.Second,
+		})
+}
+
 // ServerOptions return the chain of ServerOptions incl. middleware
-func ServerOptions() (srvOpts []grpc.ServerOption) {
+func DefaultServerOptions(srvOpts []grpc.ServerOption) []grpc.ServerOption {
 	srvOpts = append(srvOpts,
 		grpc.StreamInterceptor(grpc_middleware.ChainStreamServer(
 			grpc_ctxtags.StreamServerInterceptor(),
