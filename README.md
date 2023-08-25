@@ -7,7 +7,12 @@ gRPC Utility functions
 ```go
 import (
   "github.com/acacio/grpcutil"
+  pb "path-to-grpc-proto/proto"
 )
+
+type MyServer struct {
+  pb.Unimplemented<SOMETHING>Server
+}
 
 func NewMyServer(port, grpcwebport string) *MyServer {
 
@@ -17,24 +22,29 @@ func NewMyServer(port, grpcwebport string) *MyServer {
   // Create gRPC server
   srvOpts := grpcutil.ServerOptions()
   s := grpc.NewServer(srvOpts...)
-  log.Println("Registering gRPC reflection...")
+
+  // OPTIONAL - Registering gRPC reflection for dynamic RPC tools 
   reflection.Register(s)
 
+  // Instantiate service
   mysrv := &MyServer{}
   pb.RegisterMyServer(s, mysrv)
 
-  // After your registrations, Prometheus metrics are initialized.
+  // OPTIONAL - After your registrations, Prometheus metrics are initialized.
   log.Println("Registering Prometheus...")
   grpc_prometheus.Register(s)
-
-  // Enable gRPCWeb serving. Requires goroutine
-  go grpcutil.StartgRPCWeb(s, grpcwebport)
 
   // Start listening & serving requests
   grpcutil.Serve(s, port) // Fatal failure on error
 
   return mysrv
 }
+```
 
+### gRPCWeb
 
+To enable GRPCWeb, before Serve(), you can add the protocol adapter and server in a goroutine:
+```go
+  // OPTIONAL - Enable gRPCWeb serving. Requires goroutine
+  go grpcutil.StartgRPCWeb(s, grpcwebport)
 ```
